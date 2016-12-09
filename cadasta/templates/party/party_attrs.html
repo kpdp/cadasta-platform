@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load widget_tweaks %}
+{% load filters %}
+{% csrf_token %}
+
+{% for field in form %}
+  {% if "party::in" in field.name %}
+    <div class="form-group{% if field.errors %} has-error{% endif %} party-in hidden">
+      <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field|field_type == "datefield" %}
+        {{ field|add_class:"form-control datepicker"|set_parsley_required }}
+      {% else %}
+        {{ field|add_class:"form-control"|set_parsley_required }}
+      {% endif %}
+      <div class="error-block">{{ field.errors }}</div>
+    </div>
+  {% endif %}
+  {% if "party::gr" in field.name %}
+    <div class="form-group{% if field.errors %} has-error{% endif %} party-gr hidden">
+      <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field|field_type == "datefield" %}
+        {{ field|add_class:"form-control datepicker"|set_parsley_required }}
+      {% else %}
+        {{ field|add_class:"form-control"|set_parsley_required }}
+      {% endif %}
+      <div class="error-block">{{ field.errors }}</div>
+    </div>
+  {% endif %}
+  {% if "party::co" in field.name %}
+    <div class="form-group{% if field.errors %} has-error{% endif %} party-co hidden">
+      <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field|field_type == "datefield" %}
+        {{ field|add_class:"form-control datepicker"|set_parsley_required }}
+      {% else %}
+        {{ field|add_class:"form-control"|set_parsley_required }}
+      {% endif %}
+      <div class="error-block">{{ field.errors }}</div>
+    </div>
+  {% endif %}
+
+{% endfor %}
