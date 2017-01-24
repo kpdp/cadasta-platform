@@ -50,7 +50,12 @@ class AttributeFormMixin(SchemaSelectorMixin):
                     if len(attr.default) > 0 and len(
                             args.get('initial', '')) == 0:
                         self.set_default(args, attr)
-                self.fields[fieldname] = field(**args)
+                f = field(**args)
+
+                labels = {'data-label-' + k: v
+                          for k, v in attr.long_name_xlat.items()}
+                f.widget.attrs.update(labels)
+                self.fields[fieldname] = f
 
     def set_default(self, args, attr, boolean=False):
         if len(attr.default) > 0:
