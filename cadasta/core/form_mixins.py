@@ -22,9 +22,6 @@ class SuperUserCheck:
 
 
 class AttributeFormMixin(SchemaSelectorMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def create_model_fields(self, field_prefix, attribute_map, new_item=False):
         for selector, attributes in attribute_map.items():
             for name, attr in attributes.items():

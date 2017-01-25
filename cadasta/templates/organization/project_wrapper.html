@@ -94,11 +94,48 @@
           <li><a href="{% url 'organization:project-import' object.organization.slug object.slug %}" data-toggle="modal">{% trans "Import data" %}</a></li>
         </ul>
         {% endif %}
-      </div>
+      </div>      
+
+      {% get_current_language as LANGUAGE_CODE %}
+      {% if LANGUAGE_CODE not in form_langs %}
+      <select id="form-langs-select">
+        {% for lang in form_langs %}
+        <option value="{{ lang }}" {% if lang == form_lang_default %}selected{% endif %}>{{ lang }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
     </div>
   </div>
 </div>
 <!-- / single project header -->
+{% endblock %}
+
+{% block more_script %}
+<script type="text/javascript">
+  function setLabels(lang) {
+    const labels = $('label');
+
+    for (var i = 0, l = labels.length; i < l; i++) {
+      const label = $(labels[i]);
+      const new_text = label.attr('data-label-' + lang)
+      if (new_text) {
+        label.text(new_text);
+      }
+    }
+  }
+
+  $('#form-langs-select').change(function() {
+    const new_lang = $(this).val();
+    sessionStorage.setItem("form_lang", new_lang);
+    setLabels(new_lang);
+  });
+
+  const form_lang = sessionStorage.getItem("form_lang");
+  if (form_lang) {
+    $('#form-langs-select').val(form_lang);
+    setLabels(form_lang);
+  }
+</script>
 {% endblock %}
 
 {% block sub-nav %}
