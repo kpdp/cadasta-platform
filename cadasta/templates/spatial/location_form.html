@@ -31,7 +31,7 @@
             {% if "spatialunit::" in field.name %}
             <div class="form-group{% if field.errors %} has-error{% endif %}">
               {{ field.label_xlang }}
-              <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <label class="control-label" for="{{ field.id_for_label }}" {{ field.field.labels_xlang|safe }}>{{ field.label }}</label>
               {% if field|field_type == "datefield" %}
                 {{ field|add_class:"form-control datepicker"|set_parsley_required }}
               {% else %}

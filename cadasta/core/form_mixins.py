@@ -22,6 +22,9 @@ class SuperUserCheck:
 
 
 class AttributeFormMixin(SchemaSelectorMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def create_model_fields(self, field_prefix, attribute_map, new_item=False):
         for selector, attributes in attribute_map.items():
             for name, attr in attributes.items():
@@ -37,7 +40,6 @@ class AttributeFormMixin(SchemaSelectorMixin):
                             attr.choice_labels != []):
                         chs = list(zip(attr.choices, attr.choice_labels))
                     else:
-                        # chs = list(map(lambda c: (c, c), attr.choices))
                         chs = [(c, c) for c in attr.choices]
                     args['choices'] = chs
                 if atype.form_field == 'BooleanField':
@@ -52,9 +54,9 @@ class AttributeFormMixin(SchemaSelectorMixin):
                         self.set_default(args, attr)
                 f = field(**args)
 
-                labels = {'data-label-' + k: v
-                          for k, v in attr.long_name_xlat.items()}
-                f.widget.attrs.update(labels)
+                labels = ['data-label-{}="{}"'.format(k, v)
+                          for k, v in attr.long_name_xlat.items()]
+                f.labels_xlang = ' '.join(labels)
                 self.fields[fieldname] = f
 
     def set_default(self, args, attr, boolean=False):
