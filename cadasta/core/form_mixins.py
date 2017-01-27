@@ -1,19 +1,10 @@
 from django.forms import Form, ModelForm
-from jsonattrs.models import Schema
+from jsonattrs.mixins import template_xlang_labels
 from jsonattrs.forms import form_field_from_name
 from django.contrib.contenttypes.models import ContentType
 from tutelary.models import Role
 
 from .mixins import SchemaSelectorMixin
-
-
-def make_labels(attr):
-    try:
-        labels = ['data-label-{}="{}"'.format(k, v)
-                  for k, v in attr.long_name_xlat.items()]
-        return ' '.join(labels)
-    except AttributeError:
-        return None
 
 
 class SuperUserCheck:
@@ -60,7 +51,7 @@ class AttributeFormMixin(SchemaSelectorMixin):
                         self.set_default(args, attr)
                 f = field(**args)
 
-                f.labels_xlang = make_labels(attr)
+                f.labels_xlang = template_xlang_labels(attr)
                 self.fields[fieldname] = f
 
     def set_default(self, args, attr, boolean=False):
