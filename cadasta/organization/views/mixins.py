@@ -122,8 +122,9 @@ class ProjectMixin:
         if project.current_questionnaire:
             q = Questionnaire.objects.get(id=project.current_questionnaire)
             form_lang_default = q.default_language
-            form_langs = q.questions.filter(
-                ~Q(label_xlat={})).first().label_xlat.keys()
+            question = q.questions.filter(~Q(label_xlat={})).first()
+            if question and isinstance(question.label_xlat, dict):
+                form_langs = question.label_xlat.keys()
 
         return super().get_context_data(is_project_member=prj_member,
                                         form_lang_default=form_lang_default,

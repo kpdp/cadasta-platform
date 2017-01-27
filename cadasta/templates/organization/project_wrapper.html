@@ -98,7 +98,7 @@
       </div>      
 
       {% get_current_language as LANGUAGE_CODE %}
-      {% if LANGUAGE_CODE not in form_langs %}
+      {% if form_langs and LANGUAGE_CODE not in form_langs %}
       <select id="form-langs-select">
         {% for lang in form_langs %}
         <option value="{{ lang }}" {% if lang == form_lang_default %}selected{% endif %}>{{ lang }}</option>
