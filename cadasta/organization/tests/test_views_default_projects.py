@@ -432,7 +432,8 @@ class ProjectDashboardTest(FileStorageTestCase, ViewTestCase, UserTestCase,
         assert "<div class=\"num\">1</div> resource" in response.content
 
     def test_get_with_labels(self):
-        file = self.get_file('/questionnaires/tests/files/ok-multilingual.xlsx', 'rb')
+        file = self.get_file(
+            '/questionnaires/tests/files/ok-multilingual.xlsx', 'rb')
         form = self.storage.save('xls-forms/xls-form.xlsx', file)
         Questionnaire.objects.create_from_form(
             xls_form=form,
