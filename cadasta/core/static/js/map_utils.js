@@ -53,27 +53,33 @@ function renderFeatures(map, featuresUrl, options) {
     }
   }
 
-  function loadFeatures(url) {
-    $('#messages #loading').removeClass('hidden');
-    $.get(url, function(response) {
-      geoJson.addData(response);
+  // function loadFeatures(url) {
+  //   prev_urls = []
+  //   $('#messages #loading').removeClass('hidden');
+  //   $.get(url, function(response) {
+  //     if (url in prev_urls) {
+  //       return;
+  //     } else {
+  //       prev_urls.push(url)
+  //       // console.log(response)
+  //       geoJson.addData(response);
 
-      if (response.next) {
-        loadFeatures(response.next, map, options.trans);
-      } else {
-        $('#messages #loading').addClass('hidden');
-        if (options.fitBounds === 'locations') {
-          // var bounds = markers.getBounds();
-          var bounds = geoJson.getBounds();
-          if (bounds.isValid()) {
-            map.fitBounds(bounds);
-          }
-        }
-      }
+  //       if (response.next) {
+  //         loadFeatures(response.next, map, options.trans);
+  //       } else {
+  //         $('#messages #loading').addClass('hidden');
+  //         if (options.fitBounds === 'locations') {
+  //           var bounds = markers.getBounds();
+  //           if (bounds.isValid()) {
+  //             map.fitBounds(bounds);  
+  //           }
+  //         }
+  //       }
 
-      locationToFront();
-    });
-  }
+  //       locationToFront();
+  //     }
+  //   });
+  // }
 
   var projectBounds;
 
@@ -97,22 +103,26 @@ function renderFeatures(map, featuresUrl, options) {
   } else {
     map.fitBounds([[-45.0, -180.0], [45.0, 180.0]]);
   }
+  
+  // var geoJson = L.geoJson(null, {
+  //   style: { weight: 2 },
+  //   onEachFeature: function(feature, layer) {
+  //     if (options.trans) {
+  //       layer.bindPopup("<div class=\"text-wrap\">" +
+  //                     "<h2><span>Location</span>" +
+  //                     feature.properties.type + "</h2></div>" +
+  //                     "<div class=\"btn-wrap\"><a href='" + feature.properties.url + "' class=\"btn btn-primary btn-sm btn-block\">" + options.trans['open'] + "</a>"  +
+  //                     "</div>");  
+  //     }
+  //   }
+  // });
 
-  var geoJson = L.geoJson(null, {
-    style: { weight: 2 },
-    onEachFeature: function(feature, layer) {
-      if (options.trans) {
-        layer.bindPopup("<div class=\"text-wrap\">" +
-                      "<h2><span>Location</span>" +
-                      feature.properties.type + "</h2></div>" +
-                      "<div class=\"btn-wrap\"><a href='" + feature.properties.url + "' class=\"btn btn-primary btn-sm btn-block\">" + options.trans['open'] + "</a>"  +
-                      "</div>");
-      }
-    }
-  });
   // var markers = L.Deflate({minSize: 20, layerGroup: geoJson});
   // markers.addTo(map);
-  geoJson.addTo(map);
+  // map.eachLayer(function(layer){
+  //   map.removeLayer(layer);
+  // });
+  // geoJson.addTo(map);
 
   if (options.location) {
     options.location.addTo(map);
@@ -120,18 +130,105 @@ function renderFeatures(map, featuresUrl, options) {
   } else if (projectBounds) {
     map.fitBounds(projectBounds);
   }
-  loadFeatures(featuresUrl);
+  // loadFeatures(featuresUrl);
   map.on('zoomend', locationToFront);
   map.on('dragend', locationToFront);
 }
 
-function switch_layer_controls(map, options){
+function temp_load_locations(map, url, trans, geo_json, current, prev_urls){
+  $('#messages #loading').removeClass('hidden');
+  $.get(url, function(response) {
+    if (url in prev_urls) {
+      return;
+    } else {
+      prev_urls.push(url);
+      new_response = []
+      for (i in response.features) {
+        if (!current[response.features[i].id]) {
+          current[response.features[i].id] = true;
+          new_response.push(response.features[i])
+        } 
+      }
+      if (new_response.length > 0){
+        geo_json.addData(new_response);
+      }
+
+      if (response.next) {
+        temp_load_locations(response.next, map, trans);
+      } else {
+        $('#messages #loading').addClass('hidden');
+      }
+    }
+  });
+
+  // map.eachLayer(function(layer){
+  //   if (layer.options.geometry) {
+  //     map.removeLayer(layer)
+  //   }
+  //   // console.log(layer)
+  // })
+  // geo_json.clearLayers()
+  geo_json.addTo(map);
+}
+
+function switch_layer_controls(map, options, org_slug, project_slug, projectExtent, trans){
   // swap out default layer switcher
+  var geoJson = L.geoJson(null, {
+    style: { weight: 2 },
+    onEachFeature: function(feature, layer) {
+      if (trans) {
+        layer.bindPopup("<div class=\"text-wrap\">" +
+                      "<h2><span>Location</span>" +
+                      feature.properties.type + "</h2></div>" +
+                      "<div class=\"btn-wrap\"><a href='" + feature.properties.url + "' class=\"btn btn-primary btn-sm btn-block\">" + trans['open'] + "</a>"  +
+                      "</div>");  
+      }
+    }
+  });
+
+  geoJson.addTo(map);
+  var prev_urls = []
+  var current_layers = {}
   var layers = options.djoptions.layers;
   var baseLayers = {};
+  // var tiles = {
+  //   'minx': null,
+  //   'miny': null,
+  //   'maxx': null,
+  //   'maxy': null,
+  //   'zoom': 0
+  // };
   for (var l in layers){
     var layer = layers[l];
     var baseLayer = L.tileLayer(layer[1], layer[2]);
+    baseLayer.on('tileload', function(e){
+      url = '/async/organizations/'+ org_slug +'/projects/' + project_slug + '/spatial/tiled/' + e.coords['z'] + '/' + e.coords['x'] + '/' + e.coords['y'] + '/'
+      // console.log(url)
+      // renderFeatures(map, url, {projectExtent: projectExtent, trans: trans, fitBounds: null})
+      temp_load_locations(map, url, trans, geoJson, current_layers, prev_urls)
+      // if (e.coords['z'] !== tiles['zoom']) {
+      //   tiles['zoom'] = e.coords['z']
+      // };
+
+      // if (!tiles['minx']) {
+      //   tiles['minx'] = e.coords['x']
+      //   tiles['maxx'] = e.coords['x']
+      //   tiles['miny'] = e.coords['y']
+      //   tiles['maxy'] = e.coords['y']
+      // } else {
+      //   if (e.coords['x'] > tiles['maxx']) {
+      //     tiles['maxx'] = e.coords['x']
+      //   } else if (e.coords['x'] < tiles['minx']) {
+      //     tiles['minx'] = e.coords['x']
+      //   } else if (e.coords['y'] > tiles['maxy']) {
+      //     tiles['maxy'] = e.coords['y']
+      //   } else if (e.coords['y'] < tiles['miny']) {
+      //     tiles['miny'] = e.coords['y']
+      //   };
+      // }
+      // console.log(e.coords)
+      // console.log(tiles)
+    });
     baseLayers[layer[0]] = baseLayer;
   }
   // select first layer by default

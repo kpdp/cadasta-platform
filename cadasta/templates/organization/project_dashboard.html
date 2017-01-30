@@ -21,7 +21,6 @@
       open: "{% trans 'Open location' %}"
     };
 
-    switch_layer_controls(map, options);
 
     {% if project.extent %}
     var projectExtent = {{ project.extent.geojson|safe }};
@@ -29,9 +28,11 @@
     var projectExtent = null;
     {% endif %}
 
+    switch_layer_controls(map, options, '{{ project.organization.slug }}', '{{ project.slug }}', projectExtent, trans);
+
     renderFeatures(map,
-                   '{% url "async:spatial:list" project.organization.slug project.slug %}',
-                   {projectExtent: projectExtent, trans: trans, fitBounds: 'locations'});
+                   '{% url "async:spatial:tiled" project.organization.slug project.slug 0 0 0 %}',
+                   {projectExtent: projectExtent, trans: trans, fitBounds: 'project'});
 
     var orgSlug = '{{ project.organization.slug }}';
     var projectSlug = '{{ project.slug }}';
