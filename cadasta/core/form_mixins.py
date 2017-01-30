@@ -1,10 +1,11 @@
-from django.forms import Form, ModelForm
+from django.forms import Form, ModelForm, MultipleChoiceField
 from jsonattrs.mixins import template_xlang_labels
 from jsonattrs.forms import form_field_from_name
 from django.contrib.contenttypes.models import ContentType
 from tutelary.models import Role
 
 from .mixins import SchemaSelectorMixin
+from .widgets import XLangSelect, XLangSelectMultiple
 
 
 class SuperUserCheck:
@@ -51,7 +52,25 @@ class AttributeFormMixin(SchemaSelectorMixin):
                         self.set_default(args, attr)
                 f = field(**args)
 
-                f.labels_xlang = template_xlang_labels(attr)
+                if hasattr(f.widget, 'choices'):
+                    try:
+                        xlang_labels = dict(zip(attr.choices,
+                                                attr.choice_labels_xlat))
+                    except TypeError:
+                        xlang_labels = {}
+
+                    widget_args = {
+                        'attrs': f.widget.attrs,
+                        'choices': f.widget.choices,
+                        'xlang_labels': xlang_labels
+                    }
+
+                    if isinstance(f, MultipleChoiceField):
+                        f.widget = XLangSelectMultiple(**widget_args)
+                    else:
+                        f.widget = XLangSelect(**widget_args)
+
+                f.labels_xlang = template_xlang_labels(attr.long_name_xlat)
                 self.fields[fieldname] = f
 
     def set_default(self, args, attr, boolean=False):
