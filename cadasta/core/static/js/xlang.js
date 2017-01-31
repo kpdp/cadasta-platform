@@ -1,6 +1,6 @@
 $(document).ready(function () {
   function setLabels(lang) {
-    const labels = $('label, option');
+    const labels = $('label, option, td');
 
     for (var i = 0, l = labels.length; i < l; i++) {
       const label = $(labels[i]);
