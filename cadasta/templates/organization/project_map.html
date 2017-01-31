@@ -19,7 +19,7 @@
 <script src="{% static 'js/smap/index.js' %}"></script>
 
 <script>
-  var url = '{% url "async:spatial:list" project.organization.slug project.slug %}'
+  var url = '{% url "async:spatial:tiled" project.organization.slug project.slug 0 0 0 %}'
   var fetch_spatial_resources = '/api/v1/organizations/' +
       '{{ project.organization.slug }}/projects/{{ project.slug }}/spatialresources/';
   var trans = {open: "{% trans 'Open location' %}"};
@@ -33,7 +33,9 @@
   var options = {
     projectExtent: projectExtent,
     trans: trans,
-    fitBounds: '{{ boundary }}'
+    fitBounds: '{{ boundary }}',
+    project_slug: '{{ project.slug }}',
+    org_slug: '{{ project.organization.slug }}'
   }
 
   var layers = {{ leaflet_tiles|safe }}
