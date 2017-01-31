@@ -28,7 +28,11 @@
     var projectExtent = null;
     {% endif %}
 
-    switch_layer_controls(map, options, '{{ project.organization.slug }}', '{{ project.slug }}', projectExtent, trans);
+    options.project_slug = '{{ project.slug }}'
+    options.org_slug = '{{ project.organization.slug }}'
+    options.trans = trans
+
+    switch_layer_controls(map, options);
 
     renderFeatures(map,
                    '{% url "async:spatial:tiled" project.organization.slug project.slug 0 0 0 %}',

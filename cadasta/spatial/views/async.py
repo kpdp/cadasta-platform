@@ -137,13 +137,8 @@ How do I create a raster in EPSG:900913 and convert coordinates with PROJ.4?
 #         """
 
 #         res = self.Resolution(zoom)
-#         print('PixelsToMeters')
 #         mx = px * res - self.originShift
 #         my = py * res - self.originShift
-#         print(my)
-#         print(py)
-#         print(res)
-#         print(self.originShift)
 #         return mx, my
 
 #     def MetersToPixels(self, mx, my, zoom):
@@ -200,7 +195,6 @@ How do I create a raster in EPSG:900913 and convert coordinates with PROJ.4?
 #         """
 
 #         bounds = self.TileBounds(tx, ty, zoom)
-#         print('TileLatLonBounds: ', bounds)
 #         minLat, minLon = self.MetersToLatLon(bounds[0], bounds[1])
 #         maxLat, maxLon = self.MetersToLatLon(bounds[2], bounds[3])
 
@@ -354,7 +348,6 @@ class SpatialUnitTiles(APIPermissionRequiredMixin,
 
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset(*args, **kwargs)
-        print(queryset[0].geometry)
         x = int(self.kwargs['x'])
         y = int(self.kwargs['y'])
         zoom = int(self.kwargs['z'])
@@ -362,7 +355,6 @@ class SpatialUnitTiles(APIPermissionRequiredMixin,
         bbox = num2deg(xtile=x, ytile=y, zoom=zoom)
         bbox.extend(num2deg(xtile=x+1, ytile=y+1, zoom=zoom))
         bbox = Polygon.from_bbox(bbox)
-        print(bbox)
         final_queryset = queryset.filter(
             geometry__intersects=bbox).exclude(
             id=self.request.GET.get('exclude'))
