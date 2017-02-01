@@ -3,6 +3,7 @@ var SMap = (function() {
   var layerscontrol = L.control.layers().addTo(map);
   var prev_urls = [];
   var loaded_features = {};
+
   var geoJson = L.geoJson(null, {
     style: { weight: 2 },
     onEachFeature: function(feature, layer) {
@@ -67,27 +68,27 @@ var SMap = (function() {
 
   load_project_extent()
 
-  // function render_features(){
-    
-  // }
-
   function load_features(request_url, reload=false) {
-    $('#messages #loading').removeClass('hidden');
     if (url in prev_urls) {
       return;
     } else {
       prev_urls.push(url);
       new_features = []
 
+      $('#messages #loading').removeClass('hidden');
       $.get(request_url, function(response) {
-        for (i in response.features) {
+        for (var i in response.features) {
           if (!loaded_features[response.features[i].id]) {
             loaded_features[response.features[i].id] = true;
             new_features.push(response.features[i])
           } 
         }
         if (new_features.length > 0){
-          geoJson.addData(new_features);
+          new_feature_group = {
+            "type": "FeatureCollection",
+            "features": new_features
+          }
+          geoJson.addData(new_feature_group);
         }
 
         if (response.next) {
@@ -108,7 +109,6 @@ var SMap = (function() {
   }
 
   load_features(url);
-  // render_features()
 
   function render_spatial_resource(){
     $.ajax(fetch_spatial_resources).done(function(data){
