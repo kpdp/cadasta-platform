@@ -1,11 +1,13 @@
 from core.tests.utils.cases import FileStorageTestCase, UserTestCase
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.forms import CharField, ChoiceField
 from jsonattrs.models import (Attribute, AttributeType, Schema,
                               create_attribute_type)
 from organization.tests.factories import ProjectFactory
 from party.models import Party
 from party.tests.factories import PartyFactory
+from questionnaires.tests import factories as q_factories
 
 from ..form_mixins import AttributeForm, AttributeFormMixin, AttributeModelForm
 from ..mixins import SchemaSelectorMixin
@@ -182,6 +184,118 @@ class AttributeFormMixinTest(UserTestCase, FileStorageTestCase, TestCase):
         assert processed_attributes['fname'] == 'test'
         assert processed_attributes['homeowner']
         assert processed_attributes['number_of_something'] == '12'
+
+    def test_set_standard_field(self):
+        form_mixin = AttributeFormMixin()
+        form_mixin.project = self.project
+        form_mixin.fields = {'party_name': CharField()}
+        questionnaire = q_factories.QuestionnaireFactory(project=self.project)
+        q_factories.QuestionFactory.create(
+            name='party_name',
+            questionnaire=questionnaire,
+            label={'en': 'Name', 'de': 'Name'})
+        form_mixin.set_standard_field('party_name')
+
+        assert 'en="Name"' in form_mixin.fields['party_name'].labels_xlang
+        assert 'de="Name"' in form_mixin.fields['party_name'].labels_xlang
+
+    def test_set_standard_field_set_field_name(self):
+        form_mixin = AttributeFormMixin()
+        form_mixin.project = self.project
+        form_mixin.fields = {'name': CharField()}
+        questionnaire = q_factories.QuestionnaireFactory(project=self.project)
+        q_factories.QuestionFactory.create(
+            name='party_name',
+            questionnaire=questionnaire,
+            label={'en': 'Name', 'de': 'Name'})
+        form_mixin.set_standard_field('party_name', field_name='name')
+
+        assert 'en="Name"' in form_mixin.fields['name'].labels_xlang
+        assert 'de="Name"' in form_mixin.fields['name'].labels_xlang
+
+    def test_set_standard_field_no_question(self):
+        form_mixin = AttributeFormMixin()
+        form_mixin.project = self.project
+        form_mixin.fields = {'name': CharField()}
+        questionnaire = q_factories.QuestionnaireFactory(project=self.project)
+        q_factories.QuestionFactory.create(
+            name='party_name',
+            questionnaire=questionnaire,
+            label={'en': 'Name', 'de': 'Name'})
+        form_mixin.set_standard_field('name',)
+
+        assert hasattr(form_mixin.fields['name'], 'labels_xlang') is False
+
+    def test_set_standard_field_with_options(self):
+        form_mixin = AttributeFormMixin()
+        form_mixin.project = self.project
+        form_mixin.fields = {'building': ChoiceField(
+            choices=(('barn', 'Barn'), ('house', 'House')))}
+        questionnaire = q_factories.QuestionnaireFactory(
+            project=self.project,
+            default_language='de')
+        question = q_factories.QuestionFactory.create(
+            type='S1',
+            name='building',
+            questionnaire=questionnaire,
+            label={'en': 'Name', 'de': 'Name'})
+        q_factories.QuestionOptionFactory(
+            question=question,
+            name='barn',
+            label={'de': 'Scheune', 'en': 'Barn'},
+            index=0)
+        q_factories.QuestionOptionFactory(
+            question=question,
+            name='house',
+            label={'de': 'Haus', 'en': 'Haus'},
+            index=1)
+        form_mixin.set_standard_field('building')
+
+        widget = form_mixin.fields['building'].widget
+        assert isinstance(widget, XLangSelect) is True
+        assert widget.choices == [('barn', 'Scheune'), ('house', 'Haus')]
+        assert widget.xlang_labels == {
+            'barn': {'de': 'Scheune', 'en': 'Barn'},
+            'house': {'de': 'Haus', 'en': 'Haus'}
+        }
+
+    def test_set_standard_field_with_empty_choice(self):
+        form_mixin = AttributeFormMixin()
+        form_mixin.project = self.project
+        form_mixin.fields = {'building': ChoiceField(
+            choices=(('barn', 'Barn'), ('house', 'House')))}
+        questionnaire = q_factories.QuestionnaireFactory(
+            project=self.project,
+            default_language='de')
+        question = q_factories.QuestionFactory.create(
+            type='S1',
+            name='building',
+            questionnaire=questionnaire,
+            label={'en': 'Name', 'de': 'Name'})
+        q_factories.QuestionOptionFactory(
+            question=question,
+            name='barn',
+            label={'de': 'Scheune', 'en': 'Barn'},
+            index=0)
+        q_factories.QuestionOptionFactory(
+            question=question,
+            name='house',
+            label={'de': 'Haus', 'en': 'Haus'},
+            index=1)
+        form_mixin.set_standard_field('building',
+                                      empty_choice='Select house type')
+
+        widget = form_mixin.fields['building'].widget
+        assert isinstance(widget, XLangSelect) is True
+        assert widget.choices == [
+            ('', 'Select house type'),
+            ('barn', 'Scheune'),
+            ('house', 'Haus')
+        ]
+        assert widget.xlang_labels == {
+            'barn': {'de': 'Scheune', 'en': 'Barn'},
+            'house': {'de': 'Haus', 'en': 'Haus'}
+        }
 
 
 class AttributeFormBaseTest(UserTestCase, FileStorageTestCase, TestCase):

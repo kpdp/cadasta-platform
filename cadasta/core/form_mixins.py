@@ -4,6 +4,7 @@ from jsonattrs.forms import form_field_from_name
 from django.contrib.contenttypes.models import ContentType
 from tutelary.models import Role
 
+from questionnaires.models import Questionnaire, Question, QuestionOption
 from .mixins import SchemaSelectorMixin
 from .widgets import XLangSelect, XLangSelectMultiple
 
@@ -23,6 +24,32 @@ class SuperUserCheck:
 
 
 class AttributeFormMixin(SchemaSelectorMixin):
+    def set_standard_field(self, name, empty_choice=None, field_name=None):
+        if not field_name:
+            field_name = name
+        q = Questionnaire.objects.get(id=self.project.current_questionnaire)
+        default_lang = q.default_language
+        try:
+            question = Question.objects.get(name=name, questionnaire=q)
+            self.fields[field_name].labels_xlang = template_xlang_labels(
+                    question.label_xlat)
+
+            if question.has_options:
+                choices = QuestionOption.objects.filter(
+                    question=question).values_list('name', 'label_xlat')
+                choices, xlang_labels = zip(*[((c[0], c[1].get(default_lang)),
+                                              (c[0], c[1])) for c in choices])
+
+                choices = ([('', empty_choice)] + list(choices)
+                           if empty_choice else list(choices))
+                self.fields[field_name].widget = XLangSelect(
+                    attrs=self.fields[field_name].widget.attrs,
+                    choices=choices,
+                    xlang_labels=dict(xlang_labels)
+                )
+        except Question.DoesNotExist:
+            pass
+
     def create_model_fields(self, field_prefix, attribute_map, new_item=False):
         for selector, attributes in attribute_map.items():
             for name, attr in attributes.items():

@@ -6332,17 +6332,7 @@ div.add-btn-btm {
 
 @media (max-width: 767px) {
   .top-btn .btn {
-    min-width: auto; }
-  /*.top-btn {
-    display: table;
-    .langs-select {
-      display: table-footer-group;
-      float: none !important;
-      div {
-        display: table-cell;
-      }
-    }
-  }*/ }
+    min-width: auto; } }
 
 /* =Alerts, labels, text
 -------------------------------------------------------------- */

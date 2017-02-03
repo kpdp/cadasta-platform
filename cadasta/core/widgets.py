@@ -12,7 +12,8 @@ class XLangSelect(Select):
             selected_choices, option_value, option_label)
         rendered = rendered.replace(
             '<option',
-            '<option ' + template_xlang_labels(self.xlang_labels[option_value])
+            '<option ' + template_xlang_labels(
+                self.xlang_labels.get(option_value, ''))
         )
         return rendered
 
