@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import ugettext_lazy as __
 
 from jsonattrs.decorators import fix_model_for_attributes
 from jsonattrs.fields import JSONAttributeField
@@ -41,9 +41,9 @@ class Party(ResourceModelMixin, RandomIDModel):
     INDIVIDUAL = 'IN'
     CORPORATION = 'CO'
     GROUP = 'GR'
-    TYPE_CHOICES = ((INDIVIDUAL, _('Individual')),
-                    (CORPORATION, _('Corporation')),
-                    (GROUP, _('Group')))
+    TYPE_CHOICES = ((INDIVIDUAL, __('Individual')),
+                    (CORPORATION, __('Corporation')),
+                    (GROUP, __('Group')))
 
     # All parties are associated with a single project.
     project = models.ForeignKey(
@@ -308,7 +308,7 @@ class TenureRelationship(ResourceModelMixin, RandomIDModel):
         return "<{party}> {type} <{su}>".format(
             party=self.party.name,
             su=self.spatial_unit.name,
-            type=self.tenure_type.label,
+            type=self.tenure_type_label,
         )
 
     @property
@@ -326,6 +326,10 @@ class TenureRelationship(ResourceModelMixin, RandomIDModel):
             },
         )
 
+    @property
+    def tenure_type_label(self):
+        return _(self.tenure_type.label)
+
 
 class TenureRelationshipType(models.Model):
     """Defines allowable tenure types."""
@@ -341,24 +345,24 @@ class TenureRelationshipType(models.Model):
 
 
 TENURE_RELATIONSHIP_TYPES = (
-    ('CR', ugettext_lazy('Carbon Rights')),
-    ('CO', ugettext_lazy('Concessionary Rights')),
-    ('CU', ugettext_lazy('Customary Rights')),
-    ('EA', ugettext_lazy('Easement')),
-    ('ES', ugettext_lazy('Equitable Servitude')),
-    ('FH', ugettext_lazy('Freehold')),
-    ('GR', ugettext_lazy('Grazing Rights')),
-    ('HR', ugettext_lazy('Hunting/Fishing/Harvest Rights')),
-    ('IN', ugettext_lazy('Indigenous Land Rights')),
-    ('JT', ugettext_lazy('Joint Tenancy')),
-    ('LH', ugettext_lazy('Leasehold')),
-    ('LL', ugettext_lazy('Longterm Leasehold')),
-    ('MR', ugettext_lazy('Mineral Rights')),
-    ('OC', ugettext_lazy('Occupancy (No Documented Rights)')),
-    ('TN', ugettext_lazy('Tenancy (Documented Sub-lease)')),
-    ('TC', ugettext_lazy('Tenancy In Common')),
-    ('UC', ugettext_lazy('Undivided Co-ownership')),
-    ('WR', ugettext_lazy('Water Rights'))
+    ('CR', __('Carbon Rights')),
+    ('CO', __('Concessionary Rights')),
+    ('CU', __('Customary Rights')),
+    ('EA', __('Easement')),
+    ('ES', __('Equitable Servitude')),
+    ('FH', __('Freehold')),
+    ('GR', __('Grazing Rights')),
+    ('HR', __('Hunting/Fishing/Harvest Rights')),
+    ('IN', __('Indigenous Land Rights')),
+    ('JT', __('Joint Tenancy')),
+    ('LH', __('Leasehold')),
+    ('LL', __('Longterm Leasehold')),
+    ('MR', __('Mineral Rights')),
+    ('OC', __('Occupancy (No Documented Rights)')),
+    ('TN', __('Tenancy (Documented Sub-lease)')),
+    ('TC', __('Tenancy In Common')),
+    ('UC', __('Undivided Co-ownership')),
+    ('WR', __('Water Rights'))
 )
 
 

@@ -1,4 +1,6 @@
+from django.utils.translation import ugettext as _
 from jsonattrs.forms import AttributeModelForm
+
 from .models import Party, TenureRelationshipType, TenureRelationship
 
 
@@ -29,9 +31,10 @@ class TenureRelationshipEditForm(AttributeModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        tenuretypes = sorted(
+        tenuretypes = sorted([
+            (choice[0], _(choice[1])) for choice in
             TenureRelationshipType.objects.values_list('id', 'label')
-        )
+        ])
         self.fields['tenure_type'].choices = tenuretypes
 
     def save(self):

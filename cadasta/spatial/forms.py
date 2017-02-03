@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.gis import forms as gisforms
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import ugettext_lazy as __
 from django.contrib.contenttypes.models import ContentType
 
 from jsonattrs.models import Schema, compose_schemas
@@ -18,13 +18,13 @@ class LocationForm(AttributeModelForm):
     geometry = gisforms.GeometryField(
         widget=LeafletWidget(),
         error_messages={
-            'required': _('No map location was provided. Please use the tools '
-                          'provided on the left side of the map to mark your '
-                          'new location.')}
+            'required': __('No map location was provided. Please use the '
+                           'tools provided on the left side of the map to '
+                           'mark your new location.')}
     )
     type = forms.ChoiceField(
         choices=filter(lambda c: c[0] != 'PX', (
-            [('', _('Please select a location type'))] +
+            [('', __('Please select a location type'))] +
             list(TYPE_CHOICES)
         ))
     )
@@ -43,13 +43,6 @@ class LocationForm(AttributeModelForm):
         instance.project_id = self.project_id
         instance.save()
         return instance
-
-
-REL_TYPE_CHOICES = (
-    ('', ugettext_lazy('Please select')),
-    ('L', ugettext_lazy('Location')),
-    ('P', ugettext_lazy('Party'))
-)
 
 
 class TenureRelationshipForm(forms.Form):
@@ -72,7 +65,9 @@ class TenureRelationshipForm(forms.Form):
             list(Party.TYPE_CHOICES))
         self.fields['tenure_type'].choices = (
             [('', _("Please select a relationship type"))] +
-            sorted(TenureRelationshipType.objects.values_list('id', 'label')))
+            sorted([
+                (choice[0], _(choice[1])) for choice in
+                TenureRelationshipType.objects.values_list('id', 'label')]))
         self.project = project
         self.spatial_unit = spatial_unit
         self.add_attribute_fields(schema_selectors)
